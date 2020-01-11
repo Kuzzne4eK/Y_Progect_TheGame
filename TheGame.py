@@ -124,16 +124,6 @@ while running:
                 player.rect.x -= SPD
             if key[pygame.K_RIGHT]:
                 player.rect.x += SPD
-        if event.type == pygame.KEYUP:
-            key = pygame.key.get_pressed()
-            if key[pygame.K_DOWN]:
-                player.rect.y += SPD
-            if key[pygame.K_UP]:
-                player.rect.y -= SPD
-            if key[pygame.K_LEFT]:
-                player.rect.x -= SPD
-            if key[pygame.K_RIGHT]:
-                player.rect.x += SPD
         all_sprites.draw(screen)
     pygame.display.flip()
 pygame.quit()
