@@ -8,7 +8,7 @@ WIDTH, HEIGHT = (1200, 800)
 size = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(size)
 clock = pygame.time.Clock()
-pygame.key.set_repeat()
+pygame.key.set_repeat(10, 1)
 
 
 def terminate():
@@ -61,7 +61,7 @@ def load_level(filename):
 
 
 tile_images = {'wall': load_image('stone.png'), 'empty': load_image('black.png')}
-player_image = load_image('knight0.png', -1)
+player_image = load_image('Knight.png', -1)
 
 tile_width = tile_height = 50
 
@@ -108,12 +108,14 @@ def generate_level(level):
 
 running = True
 SPD = 10
+start_flag = False
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not start_flag:
             player, level_x, level_y = generate_level(load_level('map.txt'))
+            start_flag = True
         if event.type == pygame.KEYDOWN:
             key = pygame.key.get_pressed()
             if key[pygame.K_DOWN]:
@@ -125,5 +127,6 @@ while running:
             if key[pygame.K_RIGHT]:
                 player.rect.x += SPD
         all_sprites.draw(screen)
+        player_group.draw(screen)
     pygame.display.flip()
 pygame.quit()
