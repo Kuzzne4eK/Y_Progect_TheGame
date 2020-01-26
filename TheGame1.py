@@ -11,7 +11,7 @@ screen = pygame.display.set_mode(size)
 SPD = 7
 pygame.key.set_repeat(10, 1)
 GRAVITATION = 0.5
-JUMP_P = 10
+JUMP_P = 14
 clock = pygame.time.Clock()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
@@ -46,6 +46,13 @@ def load_level(filename):
 
     # дополняем каждую строку пустыми клетками ('.')
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+
+def win_screen():
+    all_sprites.empty()
+    screen.fill((0, 0, 0))
+    fon = pygame.transform.scale(load_image('fon.png'), (WIDTH, HEIGHT))
+    screen.blit(fon, (0, 0))
 
 
 """Загружаем два изобржения для создания анимации движения"""
@@ -94,6 +101,7 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.x += self.x_v
         self.collide(self.x_v, 0, plat)
+        self.collide_alm(alm_list)
         self.rect.y += self.y_v
         self.collide(0, self.y_v, plat)
 
@@ -103,14 +111,31 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(self, pl):
                 if x_v > 0:
                     self.rect.right = pl.rect.left
-                if x_v < 0:
+                elif x_v < 0:
                     self.rect.left = pl.rect.right
-                if y_v > 0:
+                elif y_v > 0:
                     self.rect.bottom = pl.rect.top
                     self.on_earth = True
                     self.y_v = 0
-                if y_v < 0:
+                elif y_v <= 0:
                     self.rect.top = pl.rect.bottom
+
+    def collide_alm(self, alm_l):
+        """Отвечает за столкновение с платформами."""
+        for al in alm_l:
+            if pygame.sprite.collide_rect(self, al):
+                win_screen()
+
+
+class Almaz(pygame.sprite.Sprite):
+    """Отвечает за создание алмаза."""
+
+    def __init__(self, x_cord, y_cord):
+        super().__init__(tiles_group, all_sprites)
+        self.image = load_image('almaz1.png')
+        self.rect = self.image.get_rect()
+        self.rect.x = x_cord
+        self.rect.y = y_cord
 
 
 class Camera:
@@ -135,23 +160,33 @@ class Camera:
 
 
 # Создание шлавного героя
-hero = Player(1200, 4800)
 # Создание объекта Камера
 camera = Camera()
 
 left = right = up = False
 
-all_sprites.add(hero)
 plat = []
+alm_list = []
+
 """Генерация уровня и создание группы спрайтов."""
 x_cord = 0
 y_cord = 0
 for row in load_level('map.txt'):
     for col in row:
         if col == '#':
+            # Создание платформ
             wall = Platform(x_cord, y_cord)
             tiles_group.add(wall)
             plat.append(wall)
+        if col == 'A':
+            # Создание алмаза
+            alm = Almaz(x_cord, y_cord)
+            all_sprites.add(alm)
+            alm_list.append(alm)
+        if col == '@':
+            # Создание шлавного героя
+            hero = Player(x_cord, y_cord)
+            all_sprites.add(hero)
         x_cord += 50
     y_cord += 50
     x_cord = 0
@@ -194,6 +229,7 @@ while running:
                 right = False
             if key[pygame.K_UP]:
                 up = False
+
     screen.fill((0, 0, 0))
     hero.update(left, right, up, plat)
     camera.update(hero)
